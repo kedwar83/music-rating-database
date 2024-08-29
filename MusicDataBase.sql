@@ -1,154 +1,103 @@
-DROP DATABASE IF EXISTS MusicDataBase;
-CREATE DATABASE MusicDataBase;
-USE MusicDataBase;
+-- Group 14
 
-DROP TABLE IF EXISTS Listener;
-CREATE TABLE Listener (
-FirstName VARCHAR(50) NOT NULL,
-LastName VARCHAR(50) NOT NULL,
-userID INT(10) NOT NULL,
-userName VARCHAR(50) NOT NULL,
-userPassword VARCHAR(50) NOT NULL,
-PRIMARY KEY (userID)
-);
-CREATE UNIQUE INDEX Listener_name
-ON Listener (userName);
+-- 1. Create view for employee information
+DROP VIEW IF EXISTS employee_info;
+CREATE VIEW employee_info AS
+SELECT 
+    firstName, 
+    lastName, 
+    employeeNumber
+FROM 
+    employees
+WHERE 
+    firstName IS NOT NULL;
 
-DROP TABLE IF EXISTS contentCreator;
-CREATE TABLE contentCreator (
-    firstName VARCHAR(50) NOT NULL,
-    lastName VARCHAR(50) NOT NULL,
-    userID INT(10) NOT NULL UNIQUE,
-    numberFollowers INT(10),
-    stageName VARCHAR(50) NOT NULL,
-    PRIMARY KEY (stageName)
-);
-CREATE UNIQUE INDEX contentCreator_name
-ON contentCreator (stageName);
-SELECT * FROM contentCreator;
+SELECT * FROM employee_info;
 
-DROP TABLE IF EXISTS Song;
-CREATE TABLE Song (
-songTitle VARCHAR(50) NOT NULL,
-musicType VARCHAR(50),
-length int(10) NOT NULL,
-language VARCHAR(30),
-stageName VARCHAR(50) NOT NULL,
-FOREIGN KEY (stageName) REFERENCES contentCreator(stageName),
-songID INT(10) NOT NULL UNIQUE,
-PRIMARY KEY (SongID),
-ReleaseDate DATE NOT NULL
-);
+-- 2. Create view for employees in France
+DROP VIEW IF EXISTS france_employee_info;
+CREATE VIEW france_employee_info AS
+SELECT 
+    e.firstName, 
+    e.lastName, 
+    e.employeeNumber, 
+    o.country
+FROM 
+    employees e
+JOIN 
+    offices o ON e.officeCode = o.officeCode
+WHERE 
+    o.country = 'France';
 
-CREATE UNIQUE INDEX Song_name
-ON Song (songTitle, ReleaseDate);
-SELECT * FROM Song;
+SELECT * FROM france_employee_info;
 
-DROP TABLE IF EXISTS Reviewer;
-CREATE TABLE Reviewer (
-FirstName VARCHAR(50) NOT NULL,
-LastName VARCHAR(50) NOT NULL,
-userID INT(10) NOT NULL UNIQUE,
-userName VARCHAR(50) NOT NULL,
-userPassword VARCHAR(50),
-PRIMARY KEY (userID)
-);
-CREATE UNIQUE INDEX Reviewer
-ON Reviewer (userID);
-SELECT * FROM Reviewer;
+-- 3. Create view for employees in the USA
+DROP VIEW IF EXISTS USA_employee_info;
+CREATE VIEW USA_employee_info AS
+SELECT 
+    e.firstName, 
+    e.lastName, 
+    e.employeeNumber, 
+    o.country
+FROM 
+    employees e
+JOIN 
+    offices o ON e.officeCode = o.officeCode
+WHERE 
+    o.country = 'USA';
 
-DROP TABLE IF EXISTS Review;
-CREATE TABLE Review (
-reviewID INT (5) NOT NULL,
-reviewContent VARCHAR(1000) NOT NULL,
-reviewScore INT(3),
-songID int (10),
-userID int(10),
-FOREIGN KEY (songID) REFERENCES Song(songID),
-FOREIGN KEY (userID) REFERENCES Reviewer(userID)
-);
-CREATE UNIQUE INDEX Review
-ON Review (userID);
-SELECT * FROM Review;
+SELECT * FROM USA_employee_info;
 
-INSERT INTO Listener(FirstName, LastName, userID, userName, userPassword)
-VALUES('Jon', 'Doe', 0000000001, 'jdoe123' , 'password123' ),
-('Jane', 'Doe', 0000000002,'janedoe456', 'password1234' ),
-('John','Smith',0000000003, 'jsmith123', 'password12345');
+-- 4. Create view for employees in Boston
+DROP VIEW IF EXISTS boston_employee_info;
+CREATE VIEW boston_employee_info AS
+SELECT 
+    e.firstName, 
+    e.lastName, 
+    e.employeeNumber, 
+    o.city
+FROM 
+    employees e
+JOIN 
+    offices o ON e.officeCode = o.officeCode
+WHERE 
+    o.city = 'Boston';
 
-INSERT INTO contentCreator(firstName, lastName, userID, numberFollowers, stageName)
-VALUES('John', 'Rabbit', 000000001, 1980, 'One Direction'),
-      ('Jane', 'Doesong', 000000002, 104500, 'Billie Eilish'),
-      ('alice', 'Wonderland', 0000046, 10530, 'Shaun');
+SELECT * FROM boston_employee_info;
 
-INSERT INTO Song(songTitle, songID, Length, musicType, stageName, ReleaseDate)
-VALUES ('What makes you beautiful', '57864', '350', 'pop', 'One Direction', '08-12-2011'),
-       ('Lovely', '25759', '400', 'pop', 'Billie Eilish', '06-10-2018'),
-       ('Way back home', '24753', '375', 'Electronic', 'Shaun', '04-08-2018');
+-- 5. Create view for customers whose names start with 'D'
+DROP VIEW IF EXISTS D_customer_info;
+CREATE VIEW D_customer_info AS
+SELECT 
+    customerName
+FROM 
+    customers
+WHERE 
+    customerName LIKE 'D%';
 
-INSERT INTO Reviewer(FirstName, LastName, userID, userName)
-VALUES ('niuikn', 'tgftyvi', 9750, 'ytcdetghb'),
-       ('niuikn', 'tgftyvi', 2546, 'ytcdetghb'),
-       ('niuikn', 'tgftyvi', 1865, 'ytcdetghb');
+SELECT * FROM D_customer_info;
 
-INSERT INTO Review(userID, songID, reviewID, reviewContent, reviewScore)
-VALUES(9750, 57864, 57864, 'worst  song ever, lol', 100),
-       (2546, 25759,  00002, 'made me cry tears of tears', 100),
-       (1865, 24753, 00003, 'wowie', 90);
-       
-drop view if exists listenerView;
-CREATE VIEW listenerView AS
-SELECT userName, FirstName, LastName
-FROM Listener;
+-- 6. Create view for customers outside the USA
+DROP VIEW IF EXISTS usa_customer_info;
+CREATE VIEW usa_customer_info AS
+SELECT 
+    customerName, 
+    country
+FROM 
+    customers
+WHERE 
+    country != 'USA';
 
-SELECT * FROM listenerView;
+SELECT * FROM usa_customer_info;
 
-drop view if exists contentCreatorView;
-CREATE VIEW contentCreatorView AS
-SELECT FirstName, LastName, stageName
-FROM contentCreator;
+-- 7. Create view for products with buy price between 20 and 100
+DROP VIEW IF EXISTS product_info;
+CREATE VIEW product_info AS
+SELECT 
+    buyPrice
+FROM 
+    products
+WHERE 
+    buyPrice BETWEEN 20 AND 100;
 
-select * from contentCreatorView;
-
-drop view if exists reviewAndReviewer;
-CREATE VIEW reviewAndReviewer AS
-SELECT Reviewer.userName, reviewScore, Song.songTitle
-FROM Review
-    inner join Reviewer on  Reviewer.userID = Review.userID
-    inner join Song on  Song.songID= Review.songID;
-
-select * from reviewAndReviewer;
-
-drop procedure if exists findArtist;
-delimiter $$
-CREATE PROCEDURE findArtist (
-    IN artistName varChar (15)
-)
-begin
-    select
-        stageName
-    from
-        contentCreator
-    where
-        artistName = stageName;
-end$$
-delimiter ;
-call findArtist('One Direction');
-    
-    
-drop procedure if exists findPositiveReviewsToMakeMeFeelBetter;
-delimiter $$
-CREATE PROCEDURE findPositiveReviewsToMakeMeFeelBetter (
-    IN tuneName varChar (150)
-)
-begin
-    select
-        Review.reviewScore, Song.songTitle, Review.reviewContent
-    from
-        Review , Song
-    where
-        reviewScore > 75 and tuneName = songTitle;
-end$$
-delimiter ;
-
-call findPositiveReviewsToMakeMeFeelBetter('What makes you beautiful');
+SELECT * FROM product_info;
